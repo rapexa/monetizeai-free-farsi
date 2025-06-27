@@ -1,0 +1,47 @@
+package database
+
+import (
+	"fmt"
+	"log"
+	"monetizeai-backend/config"
+	"monetizeai-backend/models"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+)
+
+var DB *gorm.DB
+
+func Connect() {
+	cfg := config.Config.DB
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Name)
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatal("Failed to connect to database:", err)
+	}
+	DB = db
+
+	// Auto-migrate all models
+	db.AutoMigrate(&models.User{}, &models.Video{}, &models.Progress{})
+
+	// Seed fake data if needed
+	seedFakeVideos()
+}
+
+func seedFakeVideos() {
+	var count int64
+	DB.Model(&models.Video{}).Count(&count)
+	if count == 0 {
+		videos := []models.Video{
+			{Title: "آشنایی با هوش مصنوعی و فرصت‌های درآمدزایی", Description: "در این ویدیو یاد می‌گیری چطور AI می‌تونه منبع درآمد باشه", Duration: "15:30", Code: "AI2024", Points: 100},
+			{Title: "ساخت اولین سرویس AI با چت بات", Description: "قدم به قدم یک چت بات هوشمند می‌سازیم", Duration: "22:45", Code: "CHAT99", Points: 150},
+			{Title: "بازاریابی و فروش سرویس AI", Description: "راهکارهای عملی برای پیدا کردن مشتری", Duration: "18:20", Code: "SELL77", Points: 200},
+			{Title: "اتوماسیون و مقیاس‌سازی درآمد", Description: "چطور سیستمت رو اتوماتیک کنی و درآمدت رو چندین برابر کنی", Duration: "25:10", Code: "AUTO55", Points: 250},
+		}
+		for _, v := range videos {
+			DB.Create(&v)
+		}
+		log.Println("Seeded fake videos.")
+	}
+}

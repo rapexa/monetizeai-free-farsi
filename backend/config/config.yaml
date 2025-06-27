@@ -1,0 +1,15 @@
+db:
+  user: monetizeai_free_user
+  password: mgstudio884
+  host: 127.0.0.1
+  port: 3306
+  name: monetizeai_free_farsi
+
+smsapikey: "OWYzZmNmNGYtZjEzMi00YjIyLWJhMzgtYmFjZjQ3NWFmMjIxMDcwZGE0ZWMwZDcyYzAxNjcxZDlkMjU0MzAzZmJhMGY="
+from_number: "+983000505"
+sms_base_url: "http://edge.ippanel.com/v1"
+
+patterns:
+  registration: "pattern_code_registration"
+  video_complete: "pattern_code_video_complete"
+  video_unlock: "pattern_code_video_unlock" 
