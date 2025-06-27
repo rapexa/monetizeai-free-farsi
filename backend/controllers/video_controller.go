@@ -6,6 +6,7 @@ import (
 	"monetizeai-backend/services"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -36,13 +37,67 @@ func CompleteVideo(c *gin.Context) {
 		database.DB.Save(&progress)
 	}
 
-	// Send SMS for video completion
-	smsParams := map[string]string{
-		"name":        user.FirstName,
-		"code":        c.Param("id"),
-		"phonenumber": user.Phone,
+	// Send completion SMS based on video ID
+	var patternKey string
+	switch videoID {
+	case 1:
+		patternKey = "complete1"
+		// Check if user received 3-hour follow-up for step 1, if yes cancel 15-hour follow-up
+		var threeHourSMS models.ScheduledSMS
+		if database.DB.Where("user_id = ? AND pattern = ? AND sent = ?", user.ID, "followup1_3h", true).First(&threeHourSMS).Error == nil {
+			database.CancelScheduledSMS(user.ID, "followup1_15h")
+		}
+		// Cancel any remaining follow-ups for step 1
+		database.CancelScheduledSMS(user.ID, "followup1_3h")
+		database.CancelScheduledSMS(user.ID, "followup1_15h")
+		// Schedule follow-ups for step 2
+		database.ScheduleSMS(user.ID, "followup2_3h", time.Now().Add(3*time.Hour))
+		database.ScheduleSMS(user.ID, "followup2_15h", time.Now().Add(15*time.Hour))
+	case 2:
+		patternKey = "complete2"
+		// Check if user received 3-hour follow-up for step 2, if yes cancel 15-hour follow-up
+		var threeHourSMS models.ScheduledSMS
+		if database.DB.Where("user_id = ? AND pattern = ? AND sent = ?", user.ID, "followup2_3h", true).First(&threeHourSMS).Error == nil {
+			database.CancelScheduledSMS(user.ID, "followup2_15h")
+		}
+		// Cancel any remaining follow-ups for step 2
+		database.CancelScheduledSMS(user.ID, "followup2_3h")
+		database.CancelScheduledSMS(user.ID, "followup2_15h")
+		// Schedule follow-ups for step 3
+		database.ScheduleSMS(user.ID, "followup3_3h", time.Now().Add(3*time.Hour))
+		database.ScheduleSMS(user.ID, "followup3_15h", time.Now().Add(15*time.Hour))
+	case 3:
+		patternKey = "complete3"
+		// Check if user received 3-hour follow-up for step 3, if yes cancel 15-hour follow-up
+		var threeHourSMS models.ScheduledSMS
+		if database.DB.Where("user_id = ? AND pattern = ? AND sent = ?", user.ID, "followup3_3h", true).First(&threeHourSMS).Error == nil {
+			database.CancelScheduledSMS(user.ID, "followup3_15h")
+		}
+		// Cancel any remaining follow-ups for step 3
+		database.CancelScheduledSMS(user.ID, "followup3_3h")
+		database.CancelScheduledSMS(user.ID, "followup3_15h")
+		// Schedule follow-ups for step 4
+		database.ScheduleSMS(user.ID, "followup4_3h", time.Now().Add(3*time.Hour))
+		database.ScheduleSMS(user.ID, "followup4_15h", time.Now().Add(15*time.Hour))
+	case 4:
+		patternKey = "complete4"
+		// Check if user received 3-hour follow-up for step 4, if yes cancel 15-hour follow-up
+		var threeHourSMS models.ScheduledSMS
+		if database.DB.Where("user_id = ? AND pattern = ? AND sent = ?", user.ID, "followup4_3h", true).First(&threeHourSMS).Error == nil {
+			database.CancelScheduledSMS(user.ID, "followup4_15h")
+		}
+		// Cancel any remaining follow-ups for step 4
+		database.CancelScheduledSMS(user.ID, "followup4_3h")
+		database.CancelScheduledSMS(user.ID, "followup4_15h")
+		// No more follow-ups needed for final step
+	default:
+		patternKey = "complete1"
 	}
-	services.SendSMS(user.Phone, smsParams, "video_complete")
+
+	smsParams := map[string]string{
+		"name": user.FirstName,
+	}
+	services.SendSMS(user.Phone, smsParams, patternKey)
 
 	c.JSON(http.StatusOK, gin.H{"message": "Video completed"})
 }
@@ -67,11 +122,9 @@ func UnlockVideo(c *gin.Context) {
 		database.DB.Save(&progress)
 	}
 
-	// Send SMS for unlocking video
+	// Send SMS for unlocking video with only 'name' param
 	smsParams := map[string]string{
-		"name":        user.FirstName,
-		"code":        c.Param("id"),
-		"phonenumber": user.Phone,
+		"name": user.FirstName,
 	}
 	services.SendSMS(user.Phone, smsParams, "video_unlock")
 

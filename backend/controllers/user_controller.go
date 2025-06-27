@@ -1,11 +1,13 @@
 package controllers
 
 import (
-	"github.com/gin-gonic/gin"
-	"net/http"
-	"monetizeai-backend/models"
 	"monetizeai-backend/database"
+	"monetizeai-backend/models"
 	"monetizeai-backend/services"
+	"net/http"
+	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func RegisterUser(c *gin.Context) {
@@ -29,12 +31,15 @@ func RegisterUser(c *gin.Context) {
 		return
 	}
 
-	// Send welcome SMS with all relevant params
+	// Send welcome SMS with only 'name' param
 	smsParams := map[string]string{
 		"name": user.FirstName,
-		"phonenumber": user.Phone,
 	}
 	services.SendSMS(user.Phone, smsParams, "registration")
 
+	// Schedule follow-up SMS jobs for step 1
+	database.ScheduleSMS(user.ID, "followup1_3h", time.Now().Add(3*time.Hour))
+	database.ScheduleSMS(user.ID, "followup1_15h", time.Now().Add(15*time.Hour))
+
 	c.JSON(http.StatusOK, gin.H{"user": user})
-} 
+}

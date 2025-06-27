@@ -5,6 +5,7 @@ import (
 	"log"
 	"monetizeai-backend/config"
 	"monetizeai-backend/models"
+	"time"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -23,7 +24,7 @@ func Connect() {
 	DB = db
 
 	// Auto-migrate all models
-	db.AutoMigrate(&models.User{}, &models.Video{}, &models.Progress{})
+	db.AutoMigrate(&models.User{}, &models.Video{}, &models.Progress{}, &models.ScheduledSMS{})
 
 	// Seed fake data if needed
 	seedFakeVideos()
@@ -44,4 +45,33 @@ func seedFakeVideos() {
 		}
 		log.Println("Seeded fake videos.")
 	}
+}
+
+func ScheduleSMS(userID uint, pattern string, sendAt time.Time) {
+	DB.Create(&models.ScheduledSMS{
+		UserID:    userID,
+		Pattern:   pattern,
+		SendAt:    sendAt,
+		Sent:      false,
+		CreatedAt: time.Now(),
+	})
+}
+
+func GetDueScheduledSMS() []models.ScheduledSMS {
+	var jobs []models.ScheduledSMS
+	DB.Where("sent = ? AND send_at <= ?", false, time.Now()).Find(&jobs)
+	return jobs
+}
+
+func MarkSMSSent(id uint) {
+	DB.Model(&models.ScheduledSMS{}).Where("id = ?", id).Update("sent", true)
+}
+
+func CancelScheduledSMS(userID uint, pattern string) {
+	DB.Model(&models.ScheduledSMS{}).Where("user_id = ? AND pattern = ? AND sent = ?", userID, pattern, false).Update("sent", true)
+}
+
+func Cancel15HourFollowup(userID uint, stepNumber int) {
+	pattern := fmt.Sprintf("followup%d_15h", stepNumber)
+	DB.Model(&models.ScheduledSMS{}).Where("user_id = ? AND pattern = ? AND sent = ?", userID, pattern, false).Update("sent", true)
 }
