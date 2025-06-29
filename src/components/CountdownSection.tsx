@@ -100,36 +100,6 @@ const CountdownSection = () => {
               همین الان ثبت‌نام کن
             </Button>
 
-            {/* Recover Session Option */}
-            <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                <div className="flex items-center gap-2 mb-2">
-                  <Key className="w-4 h-4 text-blue-600" />
-                  <span className="font-medium text-blue-800 dark:text-blue-200">قبلاً ثبت‌نام کرده‌اید؟</span>
-                </div>
-                <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
-                  اگر قبلاً ثبت‌نام کرده‌اید، فقط شماره تماس خود را وارد کنید تا جلسه شما بازیابی شود.
-                </p>
-                <div className="flex gap-2">
-                  <Input
-                    value={formData.phone}
-                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                    placeholder="شماره تماس خود را وارد کنید"
-                    className="text-right"
-                    dir="ltr"
-                  />
-                  <Button 
-                    onClick={handleRecoverSession}
-                    disabled={isSubmitting || !formData.phone.trim()}
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-2"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                    بازیابی جلسه
-                  </Button>
-                </div>
-              </div>
-              
           </CardContent>
         </Card>
       </div>
