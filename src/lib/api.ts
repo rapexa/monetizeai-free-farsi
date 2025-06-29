@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://sianmarketing.com/api';
+const API_BASE_URL = 'https://sianmarketing.com/api/api';
 
 export interface User {
   id: number;
