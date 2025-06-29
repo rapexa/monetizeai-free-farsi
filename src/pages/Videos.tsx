@@ -4,109 +4,135 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Play, Lock, CheckCircle, Trophy, Star, Zap } from 'lucide-react';
+import { Play, Lock, CheckCircle, Trophy, Star, Zap, LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import VideoCountdownTimer from '@/components/VideoCountdownTimer';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import { apiService, Video, UserProgress } from '@/lib/api';
+import { useUser } from '@/hooks/useUser';
+import { useNavigate } from 'react-router-dom';
 
-interface Video {
-  id: number;
-  title: string;
-  description: string;
-  duration: string;
-  code: string;
+interface VideoWithProgress extends Video {
   unlocked: boolean;
   completed: boolean;
-  points: number;
 }
 
 const Videos = () => {
-  const [videos, setVideos] = useState<Video[]>([
-    {
-      id: 1,
-      title: "آشنایی با هوش مصنوعی و فرصت‌های درآمدزایی",
-      description: "در این ویدیو یاد می‌گیری چطور AI می‌تونه منبع درآمد باشه",
-      duration: "15:30",
-      code: "AI2024",
-      unlocked: true,
-      completed: false,
-      points: 100
-    },
-    {
-      id: 2,
-      title: "ساخت اولین سرویس AI با چت بات",
-      description: "قدم به قدم یک چت بات هوشمند می‌سازیم",
-      duration: "22:45",
-      code: "CHAT99",
-      unlocked: false,
-      completed: false,
-      points: 150
-    },
-    {
-      id: 3,
-      title: "بازاریابی و فروش سرویس AI",
-      description: "راهکارهای عملی برای پیدا کردن مشتری",
-      duration: "18:20",
-      code: "SELL77",
-      unlocked: false,
-      completed: false,
-      points: 200
-    },
-    {
-      id: 4,
-      title: "اتوماسیون و مقیاس‌سازی درآمد",
-      description: "چطور سیستمت رو اتوماتیک کنی و درآمدت رو چندین برابر کنی",
-      duration: "25:10",
-      code: "AUTO55",
-      unlocked: false,
-      completed: false,
-      points: 250
-    }
-  ]);
-
+  const [videos, setVideos] = useState<VideoWithProgress[]>([]);
+  const [userProgress, setUserProgress] = useState<UserProgress | null>(null);
   const [currentVideo, setCurrentVideo] = useState<number | null>(null);
   const [codeInput, setCodeInput] = useState('');
-  const [totalPoints, setTotalPoints] = useState(0);
-  const [level, setLevel] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-
-  const completedVideos = videos.filter(v => v.completed).length;
-  const progress = (completedVideos / videos.length) * 100;
+  const { phone, logout } = useUser();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const points = videos.filter(v => v.completed).reduce((sum, v) => sum + v.points, 0);
-    setTotalPoints(points);
-    setLevel(Math.floor(points / 200) + 1);
-  }, [videos]);
+    if (!phone) {
+      navigate('/');
+      return;
+    }
+    loadData();
+  }, [phone, navigate]);
+
+  const loadData = async () => {
+    if (!phone) return;
+    
+    try {
+      setIsLoading(true);
+      const [videosResponse, progressResponse] = await Promise.all([
+        apiService.getVideos(),
+        apiService.getUserProgress(phone)
+      ]);
+
+      // Merge videos with progress data
+      const videosWithProgress = videosResponse.videos.map(video => {
+        const progress = progressResponse.progress.find(p => p.video_id === video.id);
+        return {
+          ...video,
+          unlocked: progress?.unlocked || false,
+          completed: progress?.completed || false,
+        };
+      });
+
+      setVideos(videosWithProgress);
+      setUserProgress(progressResponse);
+    } catch (error) {
+      console.error('Error loading data:', error);
+      toast({
+        title: "خطا در بارگذاری اطلاعات",
+        description: "لطفاً صفحه را رفرش کنید",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleWatchVideo = (videoId: number) => {
     setCurrentVideo(videoId);
   };
 
-  const handleCompleteVideo = (videoId: number) => {
-    setVideos(prev => prev.map(video => 
-      video.id === videoId 
-        ? { ...video, completed: true }
-        : video
-    ));
-    setCurrentVideo(null);
-    toast({
-      title: "آفرین! ویدیو تکمیل شد 🎉",
-      description: `${videos.find(v => v.id === videoId)?.points} امتیاز کسب کردی!`,
-    });
+  const handleCompleteVideo = async (videoId: number) => {
+    if (!phone) return;
+
+    try {
+      await apiService.completeVideo(videoId, phone);
+      
+      setVideos(prev => prev.map(video => 
+        video.id === videoId 
+          ? { ...video, completed: true }
+          : video
+      ));
+      
+      setCurrentVideo(null);
+      
+      // Reload progress data
+      await loadData();
+      
+      toast({
+        title: "آفرین! ویدیو تکمیل شد 🎉",
+        description: `${videos.find(v => v.id === videoId)?.points} امتیاز کسب کردی!`,
+      });
+    } catch (error) {
+      console.error('Error completing video:', error);
+      toast({
+        title: "خطا در تکمیل ویدیو",
+        description: "لطفاً دوباره تلاش کنید",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleCodeSubmit = (videoId: number) => {
+  const handleCodeSubmit = async (videoId: number) => {
+    if (!phone) return;
+
     const video = videos.find(v => v.id === videoId);
     if (video && codeInput.toUpperCase() === video.code) {
-      const nextVideoId = videoId + 1;
-      setVideos(prev => prev.map(v => 
-        v.id === nextVideoId ? { ...v, unlocked: true } : v
-      ));
-      setCodeInput('');
-      toast({
-        title: "کد صحیح است! 🔓",
-        description: "ویدیوی بعدی باز شد",
-      });
+      try {
+        await apiService.unlockVideo(videoId + 1, phone);
+        
+        setVideos(prev => prev.map(v => 
+          v.id === videoId + 1 ? { ...v, unlocked: true } : v
+        ));
+        
+        setCodeInput('');
+        
+        // Reload progress data
+        await loadData();
+        
+        toast({
+          title: "کد صحیح است! 🔓",
+          description: "ویدیوی بعدی باز شد",
+        });
+      } catch (error) {
+        console.error('Error unlocking video:', error);
+        toast({
+          title: "خطا در باز کردن ویدیو",
+          description: "لطفاً دوباره تلاش کنید",
+          variant: "destructive"
+        });
+      }
     } else {
       toast({
         title: "کد اشتباه است ❌",
@@ -116,12 +142,34 @@ const Videos = () => {
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
   const getLevelColor = (level: number) => {
     if (level >= 4) return "text-yellow-400";
     if (level >= 3) return "text-purple-400";
     if (level >= 2) return "text-blue-400";
     return "text-green-400";
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <LoadingSpinner size="lg" text="در حال بارگذاری ویدیوها..." />
+      </div>
+    );
+  }
+
+  if (!phone) {
+    return null;
+  }
+
+  const completedVideos = videos.filter(v => v.completed).length;
+  const progress = userProgress ? userProgress.progress_percent : (completedVideos / videos.length) * 100;
+  const totalPoints = userProgress ? userProgress.total_points : videos.filter(v => v.completed).reduce((sum, v) => sum + v.points, 0);
+  const level = userProgress ? userProgress.level : Math.floor(totalPoints / 200) + 1;
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4">
@@ -130,9 +178,21 @@ const Videos = () => {
         <Card className="bg-gradient-to-r from-primary/20 to-blue-400/20 border-primary/30 ai-glow">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              <div>
-                <h1 className="text-3xl font-bold mb-2">آکادمی MonetizeAI</h1>
-                <p className="text-muted-foreground">مسیر یادگیری هوش مصنوعی و درآمدزایی</p>
+              <div className="flex items-center justify-between w-full">
+                <div>
+                  <h1 className="text-3xl font-bold mb-2">آکادمی MonetizeAI</h1>
+                  <p className="text-muted-foreground">مسیر یادگیری هوش مصنوعی و درآمدزایی</p>
+                </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="flex items-center gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  خروج
+                </Button>
               </div>
               
               <div className="flex flex-col items-center gap-4">

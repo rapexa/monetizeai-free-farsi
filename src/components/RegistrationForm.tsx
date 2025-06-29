@@ -4,9 +4,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle, UserPlus, Phone, User, AlertTriangle, Users } from 'lucide-react';
+import { CheckCircle, UserPlus, Phone, User, AlertTriangle, Users, RefreshCw, Key } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { apiService } from '@/lib/api';
 
 const RegistrationForm = () => {
   const [formData, setFormData] = useState({
@@ -15,6 +16,7 @@ const RegistrationForm = () => {
     phone: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showRecoverOption, setShowRecoverOption] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -27,14 +29,96 @@ const RegistrationForm = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate form submission
-    setTimeout(() => {
-      toast({
-        title: "ثبت‌نام با موفقیت انجام شد!",
-        description: "اطلاعات دسترسی به شماره شما ارسال شد",
+    try {
+      // Format phone number
+      let formattedPhone = formData.phone;
+      if (formData.phone.startsWith('0')) {
+        formattedPhone = '+98' + formData.phone.substring(1);
+      } else if (!formData.phone.startsWith('+98')) {
+        formattedPhone = '+98' + formData.phone;
+      }
+
+      const response = await apiService.registerUser({
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        phone: formattedPhone,
       });
+
+      // Login the user regardless of whether they're new or existing
+      localStorage.setItem('userPhone', formattedPhone);
+
+      if (response.existing) {
+        toast({
+          title: "خوش برگشتی! 🎉",
+          description: "اطلاعات شما از قبل ثبت شده است. به ادامه یادگیری بپردازید!",
+        });
+      } else {
+        toast({
+          title: "ثبت‌نام با موفقیت انجام شد!",
+          description: "اطلاعات دسترسی به شماره شما ارسال شد",
+        });
+      }
+      
       navigate('/register/thank-you');
-    }, 1500);
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      
+      let errorMessage = "خطا در ثبت‌نام. لطفاً دوباره تلاش کنید.";
+      if (error.message?.includes('User already exists')) {
+        errorMessage = "این شماره قبلاً ثبت شده است.";
+      }
+      
+      toast({
+        title: "خطا در ثبت‌نام",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRecoverSession = async () => {
+    if (!formData.phone.trim()) {
+      toast({
+        title: "خطا",
+        description: "لطفاً شماره تماس خود را وارد کنید",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Format phone number
+      let formattedPhone = formData.phone;
+      if (formData.phone.startsWith('0')) {
+        formattedPhone = '+98' + formData.phone.substring(1);
+      } else if (!formData.phone.startsWith('+98')) {
+        formattedPhone = '+98' + formData.phone;
+      }
+
+      // Try to get user progress to validate the phone number
+      await apiService.getUserProgress(formattedPhone);
+      
+      // If successful, user exists - log them in
+      localStorage.setItem('userPhone', formattedPhone);
+      
+      toast({
+        title: "جلسه بازیابی شد! 🎉",
+        description: "به ادامه یادگیری خوش آمدید!",
+      });
+      
+      navigate('/videos');
+    } catch (error) {
+      toast({
+        title: "کاربر یافت نشد",
+        description: "این شماره تماس در سیستم ثبت نشده است. لطفاً ابتدا ثبت‌نام کنید.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -101,6 +185,45 @@ const RegistrationForm = () => {
                     <span>ظرفیت در حال تکمیل شدن است!</span>
                   </div>
                 )}
+              </div>
+
+              {/* Recover Session Option */}
+              <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div className="flex items-center gap-2 mb-2">
+                  <Key className="w-4 h-4 text-blue-600" />
+                  <span className="font-medium text-blue-800 dark:text-blue-200">قبلاً ثبت‌نام کرده‌اید؟</span>
+                </div>
+                <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
+                  اگر قبلاً ثبت‌نام کرده‌اید، فقط شماره تماس خود را وارد کنید تا جلسه شما بازیابی شود.
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    value={formData.phone}
+                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                    placeholder="شماره تماس خود را وارد کنید"
+                    className="text-right"
+                    dir="ltr"
+                  />
+                  <Button 
+                    onClick={handleRecoverSession}
+                    disabled={isSubmitting || !formData.phone.trim()}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    بازیابی جلسه
+                  </Button>
+                </div>
+              </div>
+
+              <div className="relative mb-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">یا</span>
+                </div>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">

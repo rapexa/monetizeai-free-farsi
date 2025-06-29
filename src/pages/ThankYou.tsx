@@ -3,15 +3,25 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Mail, Calendar, Gift, ArrowRight, Clock, Video } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '@/hooks/useUser';
 
 const ThankYou = () => {
+  const navigate = useNavigate();
+  const { isLoggedIn } = useUser();
+
   useEffect(() => {
     // Scroll to top when component mounts
     window.scrollTo(0, 0);
-  }, []);
+    
+    // If user is already logged in, redirect to videos
+    if (isLoggedIn) {
+      navigate('/videos');
+    }
+  }, [isLoggedIn, navigate]);
 
   const goToVideos = () => {
-    window.location.href = '/videos';
+    navigate('/videos');
   };
 
   const containerVariants = {
