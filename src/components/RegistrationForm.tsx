@@ -271,8 +271,12 @@ const RegistrationForm = () => {
                   با ثبت‌نام، شرایط استفاده را می‌پذیرید
                 </div>
               </form>
-              {/* Recover Session Option */}
-            <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+      {/* Recover Session Option */}
+      <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
                 <div className="flex items-center gap-2 mb-2">
                   <Key className="w-4 h-4 text-blue-600" />
                   <span className="font-medium text-blue-800 dark:text-blue-200">قبلاً ثبت‌نام کرده‌اید؟</span>
@@ -300,10 +304,6 @@ const RegistrationForm = () => {
                   </Button>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
     </section>
   );
 };
