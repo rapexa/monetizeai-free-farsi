@@ -123,6 +123,7 @@ func UnlockVideo(c *gin.Context) {
 	}
 
 	// Send SMS for unlocking video with only 'name' param
+	// TODO: UNCOMMENT BELOW FOR REAL SMS SENDING
 	smsParams := map[string]string{
 		"name": user.FirstName,
 	}

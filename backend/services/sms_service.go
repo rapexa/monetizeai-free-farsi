@@ -1,11 +1,8 @@
 package services
 
 import (
-	"bytes"
-	"encoding/json"
 	"log"
 	"monetizeai-backend/config"
-	"net/http"
 )
 
 type ippanelRequest struct {
@@ -17,46 +14,52 @@ type ippanelRequest struct {
 }
 
 func SendSMS(phone string, params map[string]string, patternKey string) error {
-	apiKey := config.Config.SMSApiKey
-	fromNumber := config.Config.FromNumber
-	patternCode := config.Config.Patterns[patternKey]
-	baseURL := config.Config.SMSBaseURL
+	// TODO: UNCOMMENT BELOW FOR REAL SMS SENDING
+	/*
+		apiKey := config.Config.SMSApiKey
+		fromNumber := config.Config.FromNumber
+		patternCode := config.Config.Patterns[patternKey]
+		baseURL := config.Config.SMSBaseURL
 
-	body := ippanelRequest{
-		SendingType: "pattern",
-		FromNumber:  fromNumber,
-		Code:        patternCode,
-		Recipients:  []string{phone},
-		Params:      params,
-	}
+		body := ippanelRequest{
+			SendingType: "pattern",
+			FromNumber:  fromNumber,
+			Code:        patternCode,
+			Recipients:  []string{phone},
+			Params:      params,
+		}
 
-	jsonBody, err := json.Marshal(body)
-	if err != nil {
-		log.Printf("[SMS] Failed to marshal request: %v", err)
-		return err
-	}
+		jsonBody, err := json.Marshal(body)
+		if err != nil {
+			log.Printf("[SMS] Failed to marshal request: %v", err)
+			return err
+		}
 
-	req, err := http.NewRequest("POST", baseURL+"/api/send", bytes.NewBuffer(jsonBody))
-	if err != nil {
-		log.Printf("[SMS] Failed to create request: %v", err)
-		return err
-	}
+		req, err := http.NewRequest("POST", baseURL+"/api/send", bytes.NewBuffer(jsonBody))
+		if err != nil {
+			log.Printf("[SMS] Failed to create request: %v", err)
+			return err
+		}
 
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", apiKey)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", apiKey)
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Printf("[SMS] Request failed: %v", err)
-		return err
-	}
-	defer resp.Body.Close()
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			log.Printf("[SMS] Request failed: %v", err)
+			return err
+		}
+		defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
-		log.Printf("[SMS] Non-200 response: %d", resp.StatusCode)
-		return err
-	}
+		if resp.StatusCode != 200 {
+			log.Printf("[SMS] Non-200 response: %d", resp.StatusCode)
+			return err
+		}
+	*/
 
-	log.Printf("[SMS] Sent to %s: %+v (pattern: %s)", phone, params, patternKey)
+	// SIMULATED SMS SENDING (CONSOLE ONLY)
+	log.Printf("📱 [SIMULATED SMS] To: %s | Pattern: %s | Params: %+v", phone, patternKey, params)
+	log.Printf("   └─ Would send via ippanel API with pattern code: %s", config.Config.Patterns[patternKey])
+
 	return nil
 }
