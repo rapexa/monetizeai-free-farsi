@@ -127,7 +127,21 @@ func UnlockVideo(c *gin.Context) {
 	smsParams := map[string]string{
 		"name": user.FirstName,
 	}
-	services.SendSMS(user.Phone, smsParams, "video_unlock")
+	// Use completion pattern for the video being unlocked
+	var unlockPattern string
+	switch videoID {
+	case 1:
+		unlockPattern = "complete1"
+	case 2:
+		unlockPattern = "complete2"
+	case 3:
+		unlockPattern = "complete3"
+	case 4:
+		unlockPattern = "complete4"
+	default:
+		unlockPattern = "complete1"
+	}
+	services.SendSMS(user.Phone, smsParams, unlockPattern)
 
 	c.JSON(http.StatusOK, gin.H{"message": "Video unlocked"})
 }
