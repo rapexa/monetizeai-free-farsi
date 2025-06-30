@@ -18,7 +18,12 @@ interface VideoWithProgress extends Video {
 }
 
 // TODO: Replace with actual video URLs in production
-const TEST_VIDEO_URL = 'https://sianacademy.com/wp-content/uploads/2025/06/help.mp4';
+const VIDEO_URLS = {
+  1: 'https://sianacademy.com/wp-content/uploads/2025/06/help.mp4', // Video 1
+  2: 'https://sianacademy.com/wp-content/uploads/2025/06/help.mp4', // Video 2
+  3: 'https://sianacademy.com/wp-content/uploads/2025/06/help.mp4', // Video 3
+  4: 'https://sianacademy.com/wp-content/uploads/2025/06/help.mp4', // Video 4
+} as const;
 
 const Videos = () => {
   const [videos, setVideos] = useState<VideoWithProgress[]>([]);
@@ -287,7 +292,7 @@ const Videos = () => {
                       <div className="space-y-4">
                         <div className="aspect-video bg-black/20 rounded-lg flex items-center justify-center">
                           <video 
-                            src={TEST_VIDEO_URL}
+                            src={VIDEO_URLS[video.id as keyof typeof VIDEO_URLS]}
                             controls
                             className="w-full h-full rounded-lg"
                             onEnded={() => handleCompleteVideo(video.id)}
