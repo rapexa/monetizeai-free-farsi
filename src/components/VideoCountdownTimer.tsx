@@ -10,6 +10,10 @@ interface TimeLeft {
   seconds: number;
 }
 
+const COUNTDOWN_KEY = 'video_countdown_start';
+const COUNTDOWN_HOURS = 72;
+const COUNTDOWN_MS = COUNTDOWN_HOURS * 60 * 60 * 1000;
+
 const VideoCountdownTimer = () => {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
     days: 3,
@@ -19,12 +23,18 @@ const VideoCountdownTimer = () => {
   });
 
   useEffect(() => {
-    const endTime = new Date();
-    endTime.setHours(endTime.getHours() + 72); // 72 hours from now
+    // Get or set the countdown start time in localStorage
+    let startTime = localStorage.getItem(COUNTDOWN_KEY);
+    if (!startTime) {
+      startTime = Date.now().toString();
+      localStorage.setItem(COUNTDOWN_KEY, startTime);
+    }
+    const startTimestamp = parseInt(startTime, 10);
+    const endTime = startTimestamp + COUNTDOWN_MS;
 
     const timer = setInterval(() => {
-      const now = new Date();
-      const difference = endTime.getTime() - now.getTime();
+      const now = Date.now();
+      const difference = endTime - now;
 
       if (difference <= 0) {
         clearInterval(timer);

@@ -199,7 +199,6 @@ const Videos = () => {
                   <Trophy className="w-8 h-8 text-primary bg-primary/20 rounded-full p-1" />
                   <span className="text-2xl font-extrabold text-primary">{level}</span>
                 </div>
-                <span className="text-xs text-muted-foreground">مرحله</span>
               </div>
               <div className="flex flex-col items-center gap-1">
                 <span className="text-lg font-bold text-muted-foreground">امتیاز</span>
