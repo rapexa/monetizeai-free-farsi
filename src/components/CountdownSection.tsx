@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -49,8 +48,13 @@ const CountdownSection = () => {
   }, []);
 
   const scrollToRegistration = () => {
-    const element = document.getElementById('final-cta');
-    element?.scrollIntoView({ behavior: 'smooth' });
+    const element = document.getElementById('registration');
+    if (element) {
+      element.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
   };
 
   return (

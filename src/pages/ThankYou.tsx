@@ -4,11 +4,13 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle, Mail, Calendar, Gift, ArrowRight, Clock, Video } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/hooks/useUser';
 
 const ThankYou = () => {
   const navigate = useNavigate();
   const { isLoggedIn } = useUser();
+  const { toast } = useToast();
   const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
@@ -17,6 +19,13 @@ const ThankYou = () => {
     
     // If user is already logged in, start countdown
     if (isLoggedIn) {
+      // Show initial countdown toast
+      toast({
+        title: "انتقال خودکار",
+        description: `انتقال خودکار به صفحه ویدیوها در ${countdown} ثانیه`,
+        duration: 1000,
+      });
+
       const timer = setInterval(() => {
         setCountdown(prev => {
           if (prev <= 1) {
@@ -30,7 +39,18 @@ const ThankYou = () => {
 
       return () => clearInterval(timer);
     }
-  }, [isLoggedIn, navigate]);
+  }, [isLoggedIn, navigate, toast]);
+
+  // Update toast when countdown changes
+  useEffect(() => {
+    if (isLoggedIn && countdown > 0 && countdown < 5) {
+      toast({
+        title: "انتقال خودکار",
+        description: `انتقال خودکار به صفحه ویدیوها در ${countdown} ثانیه`,
+        duration: 1000,
+      });
+    }
+  }, [countdown, isLoggedIn, toast]);
 
   const goToVideos = () => {
     navigate('/videos');
@@ -85,25 +105,6 @@ const ThankYou = () => {
                 <p className="text-xl text-muted-foreground mb-8 leading-relaxed max-w-2xl mx-auto">
             به جمع هزاران نفری که دارن با AI درآمد کسب می‌کنن، خوش اومدی!
           </p>
-
-                {isLoggedIn && (
-                  <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <Clock className="w-5 h-5 text-blue-600" />
-                      <span className="font-medium text-blue-800 dark:text-blue-200">
-                        انتقال خودکار به صفحه ویدیوها در {countdown} ثانیه
-                      </span>
-                    </div>
-                    <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2">
-                      <motion.div
-                        className="bg-blue-600 h-2 rounded-full"
-                        initial={{ width: "100%" }}
-                        animate={{ width: "0%" }}
-                        transition={{ duration: 5, ease: "linear" }}
-                      />
-                    </div>
-                  </div>
-                )}
 
           <Button 
                   size="lg" 
