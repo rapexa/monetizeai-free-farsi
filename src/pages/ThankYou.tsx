@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Mail, Calendar, Gift, ArrowRight, Clock, Video } from 'lucide-react';
@@ -9,14 +9,26 @@ import { useUser } from '@/hooks/useUser';
 const ThankYou = () => {
   const navigate = useNavigate();
   const { isLoggedIn } = useUser();
+  const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
     // Scroll to top when component mounts
     window.scrollTo(0, 0);
     
-    // If user is already logged in, redirect to videos
+    // If user is already logged in, start countdown
     if (isLoggedIn) {
-      navigate('/videos');
+      const timer = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            navigate('/videos');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
     }
   }, [isLoggedIn, navigate]);
 
@@ -73,6 +85,25 @@ const ThankYou = () => {
                 <p className="text-xl text-muted-foreground mb-8 leading-relaxed max-w-2xl mx-auto">
             به جمع هزاران نفری که دارن با AI درآمد کسب می‌کنن، خوش اومدی!
           </p>
+
+                {isLoggedIn && (
+                  <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <Clock className="w-5 h-5 text-blue-600" />
+                      <span className="font-medium text-blue-800 dark:text-blue-200">
+                        انتقال خودکار به صفحه ویدیوها در {countdown} ثانیه
+                      </span>
+                    </div>
+                    <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2">
+                      <motion.div
+                        className="bg-blue-600 h-2 rounded-full"
+                        initial={{ width: "100%" }}
+                        animate={{ width: "0%" }}
+                        transition={{ duration: 5, ease: "linear" }}
+                      />
+                    </div>
+                  </div>
+                )}
 
           <Button 
                   size="lg" 
