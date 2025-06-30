@@ -17,6 +17,9 @@ interface VideoWithProgress extends Video {
   completed: boolean;
 }
 
+// TODO: Replace with actual video URLs in production
+const TEST_VIDEO_URL = 'https://sianacademy.com/wp-content/uploads/2025/06/help.mp4';
+
 const Videos = () => {
   const [videos, setVideos] = useState<VideoWithProgress[]>([]);
   const [userProgress, setUserProgress] = useState<UserProgress | null>(null);
@@ -45,12 +48,16 @@ const Videos = () => {
         apiService.getUserProgress(phone)
       ]);
 
-      // Merge videos with progress data
+      // Merge videos with progress data and set default unlocking logic
       const videosWithProgress = videosResponse.videos.map(video => {
         const progress = progressResponse.progress.find(p => p.video_id === video.id);
+        
+        // Video 1 should always be unlocked by default
+        const isUnlocked = video.id === 1 ? true : (progress?.unlocked || false);
+        
         return {
           ...video,
-          unlocked: progress?.unlocked || false,
+          unlocked: isUnlocked,
           completed: progress?.completed || false,
         };
       });
@@ -110,6 +117,7 @@ const Videos = () => {
     const video = videos.find(v => v.id === videoId);
     if (video && codeInput.toUpperCase() === video.code) {
       try {
+        // Unlock the next video (videoId + 1)
         await apiService.unlockVideo(videoId + 1, phone);
         
         setVideos(prev => prev.map(v => 
@@ -278,13 +286,14 @@ const Videos = () => {
                     {currentVideo === video.id ? (
                       <div className="space-y-4">
                         <div className="aspect-video bg-black/20 rounded-lg flex items-center justify-center">
-                          <div className="text-center">
-                            <Play className="w-16 h-16 text-primary mx-auto mb-4" />
-                            <p className="text-lg">در حال پخش ویدیو...</p>
-                            <p className="text-sm text-muted-foreground mt-2">
-                              برای شبیه‌سازی، ۳ ثانیه صبر کنید
-                            </p>
-                          </div>
+                          <video 
+                            src={TEST_VIDEO_URL}
+                            controls
+                            className="w-full h-full rounded-lg"
+                            onEnded={() => handleCompleteVideo(video.id)}
+                          >
+                            Your browser does not support the video tag.
+                          </video>
                         </div>
                         
                         <Button 
