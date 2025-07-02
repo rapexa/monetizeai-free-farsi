@@ -7,7 +7,7 @@ db:
 
 smsapikey: "OWYzZmNmNGYtZjEzMi00YjIyLWJhMzgtYmFjZjQ3NWFmMjIxMDcwZGE0ZWMwZDcyYzAxNjcxZDlkMjU0MzAzZmJhMGY="
 from_number: "+983000505"
-sms_base_url: "https://api2.ippanel.com/api/v1"
+sms_base_url: "https://edge.ippanel.com/v1"
 
 patterns:
   registration: "kii5iwrowp477q4"
