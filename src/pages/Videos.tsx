@@ -205,7 +205,7 @@ const Videos = () => {
                 خروج
               </Button>
             </div>
-            <div className="flex items-center gap-8 mt-4">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 md:gap-8 mt-4 w-full">
               <div className="flex flex-col items-center gap-1">
                 <span className="text-lg font-bold text-muted-foreground">سطح</span>
                 <div className="flex items-center gap-2">
@@ -220,7 +220,7 @@ const Videos = () => {
                   <span className="text-2xl font-extrabold text-green-400">{totalPoints}</span>
                 </div>
               </div>
-              <div className="flex-1 flex flex-col justify-center min-w-[180px]">
+              <div className="flex-1 flex flex-col justify-center min-w-0 w-full">
                 <div className="flex justify-between text-xs mb-1">
                   <span>پیشرفت کلی</span>
                   <span>{Math.round(progress)}%</span>
