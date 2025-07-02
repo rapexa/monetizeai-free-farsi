@@ -1,8 +1,9 @@
 package config
 
 import (
-	"github.com/spf13/viper"
 	"log"
+
+	"github.com/spf13/viper"
 )
 
 type DBConfig struct {
@@ -14,11 +15,11 @@ type DBConfig struct {
 }
 
 type AppConfig struct {
-	DB DBConfig
-	SMSApiKey string
-	FromNumber string
-	SMSBaseURL string
-	Patterns map[string]string
+	DB         DBConfig          `mapstructure:"db"`
+	SMSApiKey  string            `mapstructure:"smsapikey"`
+	FromNumber string            `mapstructure:"from_number"`
+	SMSBaseURL string            `mapstructure:"sms_base_url"`
+	Patterns   map[string]string `mapstructure:"patterns"`
 }
 
 var Config AppConfig
@@ -40,4 +41,4 @@ func LoadConfig() {
 	}
 }
 
-// Placeholder for configuration logic (e.g., loading env variables) 
+// Placeholder for configuration logic (e.g., loading env variables)
