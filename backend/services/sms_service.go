@@ -124,6 +124,7 @@ func SendSMS(phone string, params map[string]string, patternKey string) error {
 	defer resp.Body.Close()
 
 	respBody, _ := ioutil.ReadAll(resp.Body)
+	log.Printf("[SMS] Response body: %s", string(respBody))
 
 	if resp.StatusCode == 401 {
 		// Token might be expired, try to re-authenticate once
@@ -134,17 +135,16 @@ func SendSMS(phone string, params map[string]string, patternKey string) error {
 			resp, err = http.DefaultClient.Do(req)
 			if err == nil {
 				respBody, _ = ioutil.ReadAll(resp.Body)
+				log.Printf("[SMS] Response body: %s", string(respBody))
 			}
 		}
 	}
 
 	if resp.StatusCode != 200 {
 		log.Printf("[SMS] Non-200 response: %d", resp.StatusCode)
-		log.Printf("[SMS] Response body: %s", string(respBody))
 		return err
 	}
 
 	log.Printf("[SMS] Sent to %s: %+v (pattern: %s)", phone, params, patternKey)
-	log.Printf("[SMS] Response body: %s", string(respBody))
 	return nil
 }

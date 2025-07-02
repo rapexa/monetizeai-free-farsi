@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"time"
 
+	"log"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -46,6 +48,8 @@ func RegisterUser(c *gin.Context) {
 		return
 	}
 
+	// TODO: UNCOMMENT BELOW FOR REAL SMS SENDING
+	log.Printf("[DEBUG] About to send registration SMS to %s with pattern %s", user.Phone, "registration")
 	// Send welcome SMS with only 'name' param
 	smsParams := map[string]string{
 		"name": user.FirstName,
