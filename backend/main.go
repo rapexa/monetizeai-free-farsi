@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"log"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -46,6 +48,7 @@ func extractStepNumber(pattern string) int {
 
 func main() {
 	config.LoadConfig()
+	log.Printf("Loaded config: %+v", config.Config)
 	database.Connect()
 	startSMSScheduler()
 	r := gin.Default()
