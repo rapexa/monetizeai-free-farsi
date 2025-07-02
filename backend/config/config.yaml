@@ -6,7 +6,7 @@ db:
   name: monetizeai_free_farsi
 
 smsapikey: "OWYzZmNmNGYtZjEzMi00YjIyLWJhMzgtYmFjZjQ3NWFmMjIxMDcwZGE0ZWMwZDcyYzAxNjcxZDlkMjU0MzAzZmJhMGY="
-from_number: "+989992177234"
+from_number: "+983000505"
 sms_base_url: "https://api2.ippanel.com/api/v1"
 
 patterns:
