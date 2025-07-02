@@ -8,12 +8,11 @@ import (
 	"net/http"
 )
 
-type ippanelRequest struct {
-	SendingType string            `json:"sending_type"`
-	FromNumber  string            `json:"from_number"`
-	Code        string            `json:"code"`
-	Recipients  []string          `json:"recipients"`
-	Params      map[string]string `json:"params"`
+type ippanelPatternRequest struct {
+	Code      string            `json:"code"`
+	Sender    string            `json:"sender"`
+	Recipient string            `json:"recipient"`
+	Variable  map[string]string `json:"variable"`
 }
 
 func SendSMS(phone string, params map[string]string, patternKey string) error {
@@ -22,12 +21,16 @@ func SendSMS(phone string, params map[string]string, patternKey string) error {
 	patternCode := config.Config.Patterns[patternKey]
 	baseURL := config.Config.SMSBaseURL
 
-	body := ippanelRequest{
-		SendingType: "pattern",
-		FromNumber:  fromNumber,
-		Code:        patternCode,
-		Recipients:  []string{phone},
-		Params:      params,
+	if baseURL == "" {
+		log.Printf("[SMS] ERROR: baseURL is empty in config!")
+		return nil
+	}
+
+	body := ippanelPatternRequest{
+		Code:      patternCode,
+		Sender:    fromNumber,
+		Recipient: phone,
+		Variable:  params,
 	}
 
 	jsonBody, err := json.Marshal(body)
@@ -36,7 +39,7 @@ func SendSMS(phone string, params map[string]string, patternKey string) error {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", baseURL+"/api/send", bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequest("POST", baseURL+"/sms/pattern/normal/send", bytes.NewBuffer(jsonBody))
 	if err != nil {
 		log.Printf("[SMS] Failed to create request: %v", err)
 		return err
