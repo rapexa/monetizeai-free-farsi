@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"monetizeai-backend/config"
 	"net/http"
@@ -39,7 +40,11 @@ func SendSMS(phone string, params map[string]string, patternKey string) error {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", baseURL+"/sms/pattern/normal/send", bytes.NewBuffer(jsonBody))
+	requestURL := baseURL + "/sms/pattern/normal/send"
+	log.Printf("[SMS] Sending to URL: %s", requestURL)
+	log.Printf("[SMS] Request body: %s", string(jsonBody))
+
+	req, err := http.NewRequest("POST", requestURL, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		log.Printf("[SMS] Failed to create request: %v", err)
 		return err
@@ -55,11 +60,15 @@ func SendSMS(phone string, params map[string]string, patternKey string) error {
 	}
 	defer resp.Body.Close()
 
+	respBody, _ := ioutil.ReadAll(resp.Body)
+
 	if resp.StatusCode != 200 {
 		log.Printf("[SMS] Non-200 response: %d", resp.StatusCode)
+		log.Printf("[SMS] Response body: %s", string(respBody))
 		return err
 	}
 
 	log.Printf("[SMS] Sent to %s: %+v (pattern: %s)", phone, params, patternKey)
+	log.Printf("[SMS] Response body: %s", string(respBody))
 	return nil
 }
