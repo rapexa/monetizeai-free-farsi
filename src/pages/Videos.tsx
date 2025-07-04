@@ -188,24 +188,24 @@ const Videos = () => {
     <div className="min-h-screen bg-background text-foreground p-4">
       {/* Header with Gamification */}
       <div className="container mx-auto mb-8">
-        <Card className="bg-gradient-to-r from-primary/20 to-blue-400/20 border-2 border-primary/30 shadow-lg rounded-2xl">
+        <Card className="bg-gradient-to-r from-primary/20 to-blue-400/20 border-2 border-primary/30 shadow-lg rounded-2xl relative">
+          {/* خروج button absolutely positioned top right */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLogout}
+            className="flex items-center gap-2 rounded-lg hover:bg-primary/10 transition absolute top-4 left-4 z-10"
+          >
+            <LogOut className="w-5 h-5" />
+            خروج
+          </Button>
           <CardContent className="py-8 px-6 flex flex-col gap-6">
-            <div className="flex items-center justify-between w-full">
-              <div>
-                <h1 className="text-3xl font-bold mb-2">آکادمی MonetizeAI</h1>
-                <p className="text-muted-foreground">مسیر یادگیری هوش مصنوعی و درآمدزایی</p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleLogout}
-                className="flex items-center gap-2 rounded-lg hover:bg-primary/10 transition"
-              >
-                <LogOut className="w-5 h-5" />
-                خروج
-              </Button>
+            <div>
+              <h1 className="text-3xl font-bold mb-2">آکادمی MonetizeAI</h1>
+              <p className="text-muted-foreground">مسیر یادگیری هوش مصنوعی و درآمدزایی</p>
             </div>
-            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 md:gap-8 mt-4 w-full">
+            {/* Stats row: level & points side by side, progress below */}
+            <div className="flex flex-row items-center justify-center gap-6 w-full mt-4">
               <div className="flex flex-col items-center gap-1">
                 <span className="text-lg font-bold text-muted-foreground">سطح</span>
                 <div className="flex items-center gap-2">
@@ -220,13 +220,13 @@ const Videos = () => {
                   <span className="text-2xl font-extrabold text-green-400">{totalPoints}</span>
                 </div>
               </div>
-              <div className="flex-1 flex flex-col justify-center min-w-0 w-full">
-                <div className="flex justify-between text-xs mb-1">
-                  <span>پیشرفت کلی</span>
-                  <span>{Math.round(progress)}%</span>
-                </div>
-                <Progress value={progress} className="h-4 rounded-full bg-primary/20 shadow-inner" />
+            </div>
+            <div className="flex-1 flex flex-col justify-center min-w-0 w-full mt-2">
+              <div className="flex justify-between text-xs mb-1">
+                <span>پیشرفت کلی</span>
+                <span>{Math.round(progress)}%</span>
               </div>
+              <Progress value={progress} className="h-4 rounded-full bg-primary/20 shadow-inner" />
             </div>
           </CardContent>
         </Card>
@@ -300,7 +300,6 @@ const Videos = () => {
                             Your browser does not support the video tag.
                           </video>
                         </div>
-                        
                         <Button 
                           onClick={() => handleCompleteVideo(video.id)}
                           className="w-full"
@@ -311,9 +310,9 @@ const Videos = () => {
                       </div>
                     ) : (
                       <Button 
-                        onClick={() => handleWatchVideo(video.id)}
+                        onClick={() => setCurrentVideo(video.id)}
                         className="w-full text-lg py-6 ai-glow"
-                        disabled={video.completed}
+                        // Allow replay for completed videos
                       >
                         <Play className="w-5 h-5 ml-2" />
                         {video.completed ? "مشاهده مجدد" : "شروع یادگیری"}
